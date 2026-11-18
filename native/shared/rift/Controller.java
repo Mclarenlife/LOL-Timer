@@ -31,16 +31,9 @@ public final class Controller {
         this.host=host;
         try{saved=Model.JSON.fromJson(host.load(),Saved.class);}catch(RuntimeException ignored){}
         if(saved==null||saved.local==null||!saved.local.valid())saved=new Saved();
+        if(saved.endpoint!=null&&!Rooms.ENDPOINT.equals(saved.endpoint)){saved.room=null;saved.code="";saved.offset=0;saved.rev=0;}
+        saved.endpoint=null;
         if(saved.room==null||!saved.room.valid()||saved.code==null||!saved.code.matches("[0-9]{6,32}"))saved.code="";
-    }
-    public String endpoint(){return saved.endpoint==null?Rooms.ENDPOINT:saved.endpoint;}
-    public boolean endpoint(String input){
-        try{
-            java.net.URI uri=new java.net.URI(input.trim());
-            if(!("https".equalsIgnoreCase(uri.getScheme())||"http".equalsIgnoreCase(uri.getScheme()))||uri.getHost()==null||uri.getUserInfo()!=null||uri.getQuery()!=null||uri.getFragment()!=null)throw new IllegalArgumentException();
-            if(pending||inRoom())return false;
-            saved.endpoint=uri.toASCIIString();persist();return true;
-        }catch(Exception e){host.notice("请输入完整的对局 API 地址");return false;}
     }
     public Model state(){return inRoom()?saved.room:saved.local;}
     public String code(){return saved.code;}
@@ -76,7 +69,7 @@ public final class Controller {
         pending=true;reading=false;long ticket=++sequence;int rev=saved.rev;
         workers.execute(()->{
             try{
-                Rooms.Snapshot data=Rooms.request(endpoint(),action,code,rev,proposal);
+                Rooms.Snapshot data=Rooms.request(Rooms.ENDPOINT,action,code,rev,proposal);
                 host.post(()->{
                     if(sequence!=ticket)return;pending=false;
                     if(entering){saved.room=state().copy();saved.code=code;clearHistory();}
@@ -117,7 +110,7 @@ public final class Controller {
             nextPoll=System.currentTimeMillis()+1000;reading=true;
             final String code=code();final long ticket=sequence;
             workers.execute(()->{
-                try{Rooms.Snapshot data=Rooms.request(endpoint(),"read",code,0,null);host.post(()->{
+                try{Rooms.Snapshot data=Rooms.request(Rooms.ENDPOINT,"read",code,0,null);host.post(()->{
                     if(ticket==sequence){reading=false;accept(data,false);}
                 });}catch(Exception e){host.post(()->{if(ticket==sequence){reading=false;connected=false;nextPoll=System.currentTimeMillis()+1500;}});}
             });

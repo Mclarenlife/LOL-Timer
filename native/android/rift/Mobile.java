@@ -122,8 +122,8 @@ public final class Mobile extends Activity {
     private EditText number(String value){EditText e=new EditText(this);e.setSingleLine(true);e.setInputType(InputType.TYPE_CLASS_NUMBER);e.setTextColor(FG);e.setHintTextColor(MUTED);e.setBackground(shape(BG,LINE));pad(e,12,6,12,6);e.setText(value);return e;}
     private void room(){Sheet s=new Sheet(ctl.inRoom()?"对局 "+ctl.code():"对局码");
         if(ctl.inRoom())s.action("离开对局",()->{ctl.leave();s.close();refresh();});
-        else{EditText code=number("");code.setHint("6 至 32 位数字");s.add(code);EditText server=number(ctl.endpoint());server.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI);server.setHint("对局服务 HTTPS API 地址");s.add(server);LinearLayout row=layout(0);s.add(row);
-            for(boolean create:new boolean[]{true,false}){Button b=button(create?"创建对局":"加入对局",()->{String input=code.getText().toString();if(!input.matches("[0-9]{6,32}")){code.setError("请输入 6 至 32 位数字");return;}if(!ctl.endpoint(server.getText().toString()))return;ctl.enter(input,create);s.close();});if(create)accent(b);flex(row,b,48);}}
+        else{EditText code=number("");code.setHint("6 至 32 位数字");s.add(code);LinearLayout row=layout(0);s.add(row);
+            for(boolean create:new boolean[]{true,false}){Button b=button(create?"创建对局":"加入对局",()->{String input=code.getText().toString();if(!input.matches("[0-9]{6,32}")){code.setError("请输入 6 至 32 位数字");return;}ctl.enter(input,create);s.close();});if(create)accent(b);flex(row,b,48);}}
         s.open();
     }
     private Switch option(Sheet s,String name,boolean value){Switch b=new Switch(this);b.setText(name);b.setTextColor(FG);b.setTextSize(15);b.setChecked(value);

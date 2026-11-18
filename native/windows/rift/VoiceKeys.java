@@ -39,10 +39,10 @@ final class VoiceKeys {
                 for(String item:list){String title=item.isEmpty()?"系统默认录音设备":item;picker.row(key(title,()->{input[0]=item;devices.setText(title);picker.close();}));}picker.open();
             });
             s.row(label("语音模式",14,MUTED));JPanel modes=panel(new java.awt.GridLayout(1,3,4,0));s.row(modes);
-            JButton bind=key("",()->{});Runnable draw=()->{bind.setText("快捷键   "+name(chosen[1],chosen[2]));bind.setEnabled(chosen[0]!=0);desc.setText("当前模式 · "+MODES[chosen[0]]);};
+            JButton bind=key("",()->{});Runnable draw=()->{bind.setText("录入快捷键   "+name(chosen[1],chosen[2]));bind.setEnabled(chosen[0]!=0);desc.setText("当前模式 · "+MODES[chosen[0]]);};
             for(int i=0;i<3;i++){final int m=i;modes.add(key(MODES[i],()->{chosen[0]=m;draw.run();}));}
             s.row(desc);s.row(bind);draw.run();
-            bind.addActionListener(e->KeyBinding.choose(s.dialog,(key,mask)->{chosen[1]=key;chosen[2]=mask;draw.run();}));
+            bind.addActionListener(e->KeyBinding.record(s.dialog,(key,mask)->{chosen[1]=key;chosen[2]=mask;draw.run();}));
             s.action("保存语音设置",()->{mode=chosen[0];vk=chosen[1];mods=chosen[2];device.selected=input[0];
                 prefs.putInt("mode",mode);prefs.putInt("key",vk);prefs.putInt("mods",mods);prefs.put("device",device.selected);s.close();});
             s.open();

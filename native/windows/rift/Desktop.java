@@ -103,9 +103,8 @@ public final class Desktop implements Controller.Host {
     void room(){
         if(ctl.inRoom()){confirm("离开对局 "+ctl.code()+"？","离开后恢复自己的单人计时",ctl::leave);return;}
         Sheet s=new Sheet(frame,"对局码");JTextField code=field("");s.row(label("输入 6 至 32 位数字",14,MUTED));s.row(code);
-        JTextField server=field(ctl.endpoint());s.row(label("对局服务 API 地址",14,MUTED));s.row(server);
         for(boolean create:new boolean[]{true,false})s.action(create?"创建对局":"加入对局",()->{
-            String digits=code.getText().trim();if(!digits.matches("[0-9]{6,32}")){code.setBorder(new LineBorder(LANES[4],2));code.requestFocusInWindow();return;}if(!ctl.endpoint(server.getText()))return;ctl.enter(digits,create);s.close();});s.open();
+            String digits=code.getText().trim();if(!digits.matches("[0-9]{6,32}")){code.setBorder(new LineBorder(LANES[4],2));code.requestFocusInWindow();return;}ctl.enter(digits,create);s.close();});s.open();
     }
     void help(){
         Sheet sheet=new Sheet(frame,"使用说明");
@@ -113,7 +112,7 @@ public final class Desktop implements Controller.Host {
             {"记录技能","点击技能名称更换技能，点击「计时」开表。「扣秒」可提前 5、10 或 20 秒；空闲技能会直接开始计时。「重置」结束本次计时。"},
             {"装备与提醒","点击位置旁的「急速」选择鞋子与符文。设置里可配置记录时自动扣秒、提前提醒、提示音、中文播报及悬浮窗到期闪烁。"},
             {"对局同步","单人计时自动保存在本机。点击「对局码」创建或加入 6–32 位数字对局。相同对局的队友共享技能配置和倒计时。"},
-            {"语音口令","开启语音后说「上单闪现」等位置与技能组合。设置 → 语音输入，可选择麦克风、随时说话、长按说话或按键切换模式。可绑定键盘键、组合键和鼠标侧键。"},
+            {"语音口令","开启语音后说「上单闪现」等位置与技能组合。设置 → 语音输入，可选择麦克风、随时说话、长按说话或按键切换模式。点击「录入快捷键」后直接按键盘按键、组合键或鼠标侧键。"},
             {"悬浮窗","未锁定时左键点技能开表，右键点技能扣秒或重置，点位置名称设置急速。拖动标题移动，拖动右下角缩放。点右上锁图标锁定，再点即可解锁。锁定后其余区域均可穿透。"}
         };
         JPanel notes=panel(new GridLayout(0,1,0,8));

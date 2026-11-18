@@ -28,6 +28,11 @@ public final class Check implements Controller.Host {
         restored.edit(m->m.slots[0].endAt=now-10);restored.tick();expect(restored.state().slots[0].endAt==null&&reminders==1,"restore after expiry");
         restored.edit(m->{m.settings.lead=0;m.deduct(3,now,20);});restored.tick();expect(reminders==2&&restored.state().slots[3].endAt==null,"deduct past expiry");
         restored.resetGame();expect(restored.state().slots[0].spellId==Model.Spell.SummonerHeal,"reset keeps choices");
+        restored.choose(0,Model.Spell.SummonerHaste);
+        restored.choose(7,Model.Spell.SummonerHeal);
+        Commands.apply(restored,"上单 疾 跑");Commands.apply(restored,"下 路 治疗");
+        expect(restored.state().slots[0].left(restored.now())>0,"voice starts top ghost");
+        expect(restored.state().slots[7].left(restored.now())>0,"voice starts bottom heal");
         System.out.println("PASS offline timers, reminders, expiry, persistence and selection");
     }
     private static void online()throws Exception{

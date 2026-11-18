@@ -16,8 +16,6 @@ public final class Speech {
         void vosk_recognizer_set_words(Pointer recognizer,int enabled);
         int vosk_recognizer_accept_waveform(Pointer recognizer,byte[] bytes,int count);
         String vosk_recognizer_result(Pointer recognizer);
-        String vosk_recognizer_final_result(Pointer recognizer);
-        void vosk_recognizer_reset(Pointer recognizer);
         void vosk_recognizer_free(Pointer recognizer);
         void vosk_set_log_level(int level);
     }
@@ -28,11 +26,13 @@ public final class Speech {
     public Speech(Device device,Consumer<Runnable> ui,Consumer<String> state,Consumer<String> heard){
         this.device=device;this.ui=ui;this.state=state;this.heard=heard;
     }
-    private volatile boolean gate=true;
-    private final Object signal=new Object();
-    public void gate(boolean open){synchronized(signal){gate=open;signal.notifyAll();}}
     public boolean active(){return running;}
-    public void stop(){session++;running=false;synchronized(signal){signal.notifyAll();}Input input=stream;if(input!=null)input.close();state.accept("");}
+    public void stop(){
+        Input current;
+        synchronized(this){session++;running=false;current=stream;stream=null;}
+        if(current!=null)current.close();
+        state.accept("");
+    }
     public void start(){
         if(running)return;running=true;long ticket=++session;state.accept("准备语音模型");
         Thread thread=new Thread(()->listen(ticket),"rift-microphone");thread.setDaemon(true);thread.start();
@@ -68,24 +68,20 @@ public final class Speech {
             if(rec==null)throw new IOException("口令词表加载失败");
             if(session!=ticket)return;
             d.vosk_recognizer_set_words(rec,1);byte[] buffer=new byte[1280];
+            input=device.microphone();
+            synchronized(this){
+                if(session!=ticket){input.close();input=null;return;}
+                stream=input;
+            }
+            tell(ticket,()->state.accept("正在聆听"));
             while(session==ticket){
-                if(!gate){
-                    tell(ticket,()->state.accept("快捷键待命"));
-                    synchronized(signal){while(session==ticket&&!gate)signal.wait();}
-                }
-                if(session!=ticket)break;
-                d.vosk_recognizer_reset(rec);input=device.microphone();stream=input;tell(ticket,()->state.accept("正在聆听"));
-                try{
-                    while(session==ticket&&gate){
-                        int count=input.read(buffer);if(count<0)throw new IOException("麦克风已断开");
-                        if(count>0&&d.vosk_recognizer_accept_waveform(rec,buffer,count)==1)decode(ticket,d.vosk_recognizer_result(rec));
-                    }
-                    if(session==ticket)decode(ticket,d.vosk_recognizer_final_result(rec));
-                }finally{input.close();if(stream==input)stream=null;input=null;}
+                int count=input.read(buffer);if(count<0)throw new IOException("麦克风已断开");
+                if(count>0&&d.vosk_recognizer_accept_waveform(rec,buffer,count)==1)decode(ticket,d.vosk_recognizer_result(rec));
             }
         }catch(Exception|LinkageError e){failure="语音不可用 · "+(e.getMessage()==null?"请检查麦克风":e.getMessage());}
         finally{
-            if(input!=null)input.close();if(stream==input)stream=null;
+            synchronized(this){if(stream==input)stream=null;else input=null;}
+            if(input!=null)input.close();
             if(rec!=null)d.vosk_recognizer_free(rec);if(model!=null)d.vosk_model_free(model);
             final String message=failure;tell(ticket,()->{running=false;state.accept(message);});
         }

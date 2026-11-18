@@ -6,7 +6,14 @@ import javax.sound.sampled.*;
 
 final class DesktopMic implements Speech.Device {
     static final AudioFormat FORMAT=new AudioFormat(16000,16,1,true,false);
-    volatile String selected="";
+    private final java.util.prefs.Preferences preferences=java.util.prefs.Preferences.userNodeForPackage(DesktopMic.class).node("voice");
+    private volatile String selected=preferences.get("device","");
+    String selected(){return selected;}
+    void select(String name)throws java.util.prefs.BackingStoreException{
+        preferences.put("device",name);
+        preferences.flush();
+        selected=name;
+    }
     static java.util.List<String> devices(){
         java.util.ArrayList<String> names=new java.util.ArrayList<>();
         for(Mixer.Info info:AudioSystem.getMixerInfo())if(AudioSystem.getMixer(info).isLineSupported(new DataLine.Info(TargetDataLine.class,FORMAT)))names.add(info.getName());

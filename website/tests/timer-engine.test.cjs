@@ -93,3 +93,22 @@ test('haste, elapsed time and recording deduction',()=>{
   require('node:assert/strict').equal(engine.durationMs('SummonerSmite',14),15000);
   require('node:assert/strict').equal(engine.durationMs('SummonerFlash',8),300000);
 });
+
+test('renamed spells match the shipped voice grammar for every position', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const vm = require('node:vm');
+  const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
+  const parse = vm.runInNewContext(read('voice.js') + '\nRiftVoice.parse');
+  const commands = JSON.parse(read('assets/speech/commands.json')).map(words => words.replace(/\s/g, ''));
+  const lanes = ['上单', '打野', '中单', '下路', '辅助'];
+  for (const [name, id] of [['治疗', 'SummonerHeal'], ['疾跑', 'SummonerHaste']]) {
+    assert.equal(E.spells.find(spell => spell.id === id).name, name);
+    lanes.forEach((lane, role) => {
+      const phrase = lane + name;
+      assert.ok(commands.includes(phrase), phrase);
+      assert.equal(parse(phrase).role, role);
+      assert.equal(parse(phrase).id, id);
+    });
+  }
+});

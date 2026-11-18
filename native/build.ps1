@@ -34,7 +34,7 @@ if ($Target -ne 'android') {
     Copy-Item -LiteralPath 'voice-data/model' -Destination $speechDir -Recurse
     Copy-Item 'voice-data/windows/*.dll' -Destination $speechDir
     $win = New-BuildFolder "$build/windows"
-    Run (Join-Path $javaBin 'jpackage.exe') @('--type','app-image','--name','RiftTimer','--app-version','2.2.4','--vendor','Rift Timer','--input',$inputDir,'--main-jar','RiftTimer.jar','--main-class','rift.Desktop','--add-modules','java.desktop,java.logging,java.prefs,jdk.unsupported,jdk.crypto.ec','--dest',$win,'--icon',(Resolve-Path 'art/RiftTimer.ico').Path)
+    Run (Join-Path $javaBin 'jpackage.exe') @('--type','app-image','--name','RiftTimer','--app-version','2.2.5','--vendor','Rift Timer','--input',$inputDir,'--main-jar','RiftTimer.jar','--main-class','rift.Desktop','--add-modules','java.desktop,java.logging,java.prefs,jdk.unsupported,jdk.crypto.ec','--dest',$win,'--icon',(Resolve-Path 'art/RiftTimer.ico').Path)
     $winRelease = New-BuildFolder "$release/windows"
     Copy-Item -LiteralPath "$win/RiftTimer" -Destination $winRelease -Recurse -Force
     Run 'tar.exe' @('-a','-cf',"$release/RiftTimer-Windows-x64.zip",'-C',$win,'RiftTimer')

@@ -9,8 +9,8 @@ public final class Model {
     public static final String[] ICONS={"top","jungle","middle","bottom","utility"};
     public enum Spell {
         SummonerFlash("闪现",300), SummonerTeleport("传送",300), SummonerDot("引燃",180),
-        SummonerSmite("惩戒",15), SummonerHeal("治疗术",240), SummonerBarrier("屏障",180),
-        SummonerExhaust("虚弱",240), SummonerBoost("净化",240), SummonerHaste("幽灵疾步",240);
+        SummonerSmite("惩戒",15), SummonerHeal("治疗",240), SummonerBarrier("屏障",180),
+        SummonerExhaust("虚弱",240), SummonerBoost("净化",240), SummonerHaste("疾跑",240);
         public final String label;
         public final int seconds;
         Spell(String label,int seconds){this.label=label;this.seconds=seconds;}

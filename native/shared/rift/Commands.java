@@ -5,7 +5,7 @@ import java.util.*;
 public final class Commands {
     private Commands(){}
     private static final String[][] LANES={{"上单","上路"},{"打野"},{"中单","中路"},{"射手","下路","AD","ADC"},{"辅助"}};
-    private static final String[][] NAMES={{"闪现","闪"},{"传送","TP"},{"引燃","点燃"},{"惩戒"},{"治疗术","治疗"},{"屏障"},{"虚弱"},{"净化"},{"幽灵疾步","疾跑"}};
+    private static final String[][] NAMES={{"闪现","闪"},{"传送","TP"},{"引燃","点燃"},{"惩戒"},{"治疗"},{"屏障"},{"虚弱"},{"净化"},{"疾跑"}};
     private static final Map<String,Integer> phrases=new LinkedHashMap<>();
     static {
         for(int r=0;r<LANES.length;r++)for(String lane:LANES[r])

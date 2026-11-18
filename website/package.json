@@ -1,0 +1,12 @@
+{
+  "name": "rift-timer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "英雄联盟召唤师技能倒计时工具",
+  "scripts": {
+    "dev": "node server.cjs",
+    "start": "node server.cjs",
+    "test": "node --test tests/timer-engine.test.cjs",
+    "check": "node --check app.js && node --check timer-engine.js && node --check server.cjs"
+  }
+}

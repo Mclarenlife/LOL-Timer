@@ -32,7 +32,7 @@ Android 和 Windows 的英雄联盟召唤师技能计时工具。两端共用 Ja
 
 Windows 主界面的「悬浮窗」可单独开关。拖动窗口移动，拖动右下角斜线缩放，位置与尺寸自动保存。「设置」中可修改不透明度、锁定或解锁。右上角的锁可随时切换状态，锁定后其余区域鼠标穿透。解锁后可点击技能计时、右击扣秒或重置、点击位置设置急速。主窗口顶栏「说明」提供完整操作指南。桌面合成器控制普通置顶窗口的显示，独占全屏可能遮住它。悬浮窗只使用本程序的窗口句柄，数据来自本工具的手动记录、语音口令和对局服务。
 
-腾讯协议限制未经授权挂接游戏数据及修改游戏指令，Riot 开发规范限制带来不公平优势的信息。公开资料未确认国服对本产品的认可。参见[腾讯游戏许可及服务协议](https://game.qq.com/contract.shtml)与[Riot 游戏完整性规范](https://developer.riotgames.com/docs/lol#game-integrity)。
+腾讯协议限制未经授权挂接游戏数据及修改游戏指令，Riot 开发规范限制带来不公平优势的信息。Riot 在 25.17 版本公告的“死亡回放与召唤师技能追踪”一节明确说明限制第三方冷却追踪工具。[Riot 25.17 版本公告](https://www.leagueoflegends.com/en-ph/news/game-updates/patch-25-17-notes/)参见[腾讯游戏许可及服务协议](https://game.qq.com/contract.shtml)与[Riot 游戏完整性规范](https://developer.riotgames.com/docs/lol#game-integrity)。
 
 离线识别引擎及模型来自 [Vosk](https://alphacephei.com/vosk/models)，型号为 vosk-model-small-cn-0.22（Apache-2.0）。Windows 使用 Vosk 0.3.45，Android 使用 Vosk 0.3.47；JNA 为 5.17.0。构建所需的库和模型已随项目保存在 lib 和 voice-data 目录。
 

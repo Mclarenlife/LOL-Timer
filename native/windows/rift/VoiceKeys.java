@@ -1,7 +1,7 @@
 package rift;
 
 import com.sun.jna.Native;
-import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.Library;
 import java.awt.GridLayout;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -9,16 +9,14 @@ import javax.swing.*;
 import static rift.Studio.*;
 
 final class VoiceKeys {
-    interface Keys extends StdCallLibrary {
+    interface Keys extends Library {
         Keys API=Native.load("user32",Keys.class);
         short GetAsyncKeyState(int key);
     }
     static final String[] MODES={"随时说话","长按按键说话","按键切换说话"};
     final DesktopMic device=new DesktopMic();
     private final Preferences prefs;
-    private Thread monitor;
-    volatile boolean open;
-    boolean ready;
+    boolean down,open,ready,suspended;
     private int mode,vk,mods;
 
     VoiceKeys(){this(Preferences.userNodeForPackage(VoiceKeys.class).node("voice"));}
@@ -31,37 +29,16 @@ final class VoiceKeys {
     }
     String startLabel(){return "开启语音 · "+MODES[mode];}
     static boolean pressed(int key){return (Keys.API.GetAsyncKeyState(key)&0x8000)!=0;}
-    static boolean chord(int key,int mods){
-        return pressed(key)&&((mods&1)==0||pressed(17))&&((mods&2)==0||pressed(18))&&
-            ((mods&4)==0||pressed(16))&&((mods&8)==0||pressed(91)||pressed(92));
+    boolean chord(){return pressed(vk)&&((mods&1)==0||pressed(17))&&((mods&2)==0||pressed(18))&&((mods&4)==0||pressed(16))&&((mods&8)==0||pressed(91)||pressed(92));}
+    void arm(Speech speech){open=mode==0;down=mode!=0&&chord();ready=false;speech.gate(open);speech.start();}
+    void poll(Speech speech){
+        if(!speech.active()||mode==0||suspended)return;
+        handleKey(chord(),speech);
     }
-    synchronized void stop(Speech speech){
-        if(monitor!=null){monitor.interrupt();monitor=null;}
-        open=false;ready=false;speech.stop();
-    }
-    synchronized void arm(Speech speech){
-        if(speech.active())return;
-        open=mode==0;ready=false;
-        int selectedMode=mode,key=vk,mask=mods;
-        boolean initiallyDown=selectedMode!=0&&chord(key,mask);
-        speech.gate(open);speech.start();
-        if(selectedMode==0)return;
-        monitor=new Thread(()->watch(speech,selectedMode,key,mask,initiallyDown),"rift-voice-key");
-        monitor.setDaemon(true);monitor.start();
-    }
-    private void watch(Speech speech,int selectedMode,int key,int mask,boolean previous){
-        try{
-            while(!Thread.currentThread().isInterrupted()){
-                synchronized(this){
-                    if(Thread.currentThread()!=monitor||!speech.active())return;
-                    boolean hit=chord(key,mask);
-                    boolean next=selectedMode==1?hit:(hit&&!previous?!open:open);
-                    if(next!=open){open=next;speech.gate(next);}
-                    previous=hit;
-                }
-                Thread.sleep(8);
-            }
-        }catch(InterruptedException stopped){Thread.currentThread().interrupt();}
+    void handleKey(boolean hit,Speech speech){
+        boolean next=mode==1?hit:(hit&&!down?!open:open);
+        if(next!=open){open=next;speech.gate(open);}
+        down=hit;
     }
     static String name(int key,int mods){
         return ((mods&1)!=0?"Ctrl + ":"")+((mods&2)!=0?"Alt + ":"")+((mods&4)!=0?"Shift + ":"")+
@@ -78,7 +55,7 @@ final class VoiceKeys {
     }
     void settings(Desktop desktop,Speech speech){
         boolean resume=speech.active();
-        if(resume)stop(speech);
+        suspended=true;if(resume)speech.stop();
         try{
             Sheet sheet=new Sheet(desktop.frame,"语音输入");
             JLabel status=label("当前模式 · "+MODES[mode],14,MUTED);
@@ -113,6 +90,6 @@ final class VoiceKeys {
             bind.addActionListener(e->KeyBinding.record(sheet.dialog,(key,mask)->{apply(mode,key,mask,device.selected,status);draw.run();}));
             sheet.row(status);sheet.row(bind);draw.run();
             sheet.action("完成",sheet::close);sheet.open();
-        }finally{if(resume)arm(speech);}
+        }finally{suspended=false;if(resume)arm(speech);}
     }
 }

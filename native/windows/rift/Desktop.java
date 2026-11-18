@@ -52,7 +52,7 @@ public final class Desktop implements Controller.Host {
         tools.add(key("悬浮窗",()->hud.show(!hud.window.isVisible())));tools.add(key("说明",this::help));heading.add(tools,BorderLayout.EAST);top.add(heading,BorderLayout.NORTH);
         JPanel console=card(new BorderLayout(12,0),RAISED,22);console.setBorder(new EmptyBorder(13,16,13,16));
         JPanel state=panel(new GridLayout(2,1));state.add(status);state.add(summary);console.add(state);
-        mic=key(voiceKeys.startLabel(),MINT,BG,()->{if(speech.active())voiceKeys.stop(speech);else voiceKeys.arm(speech);});console.add(mic,BorderLayout.EAST);top.add(console);root.add(top,BorderLayout.NORTH);
+        mic=key(voiceKeys.startLabel(),MINT,BG,()->{if(speech.active())speech.stop();else voiceKeys.arm(speech);});console.add(mic,BorderLayout.EAST);top.add(console);root.add(top,BorderLayout.NORTH);
         speech=new Speech(voiceKeys.device,SwingUtilities::invokeLater,s->{voiceKeys.ready="正在聆听".equals(s);mic.setText(speech.active()?"关闭语音":voiceKeys.startLabel());notice(s.isEmpty()?"语音已关闭":s+(speech.active()?"  ·  说「上单闪现」":""));},
             phrase->{if(System.currentTimeMillis()>=muteUntil){notice("听到  "+phrase.replace(" ",""));Commands.apply(ctl,phrase);refresh();}});
         hud=new Overlay(this,ctl);
@@ -68,6 +68,7 @@ public final class Desktop implements Controller.Host {
         JPanel foot=panel(new BorderLayout());foot.add(message);JPanel small=panel(new FlowLayout(FlowLayout.RIGHT,4,0));small.add(key("最近提醒",this::history));
         small.add(key("重置本局",()->confirm("重置全部计时？","保留技能选择及提醒设置",ctl::resetGame)));foot.add(small,BorderLayout.EAST);root.add(foot,BorderLayout.SOUTH);
         Dimension screen=Toolkit.getDefaultToolkit().getScreenSize();frame.setMinimumSize(new Dimension(600,430));frame.setSize(Math.min(1170,screen.width),Math.min(705,screen.height-48));frame.setLocationRelativeTo(null);refresh();frame.setVisible(true);
+        new javax.swing.Timer(35,e->voiceKeys.poll(speech)).start();
         new javax.swing.Timer(200,e->{ctl.tick();refresh();}).start();
     }
     JPanel slot(int i){

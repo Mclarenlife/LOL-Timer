@@ -2,7 +2,7 @@
 
 英雄联盟召唤师技能计时器，支持 Windows、Android 和网页。三个客户端可连接同一个对局服务，按对局码共享阵容、急速和技能截止时间。
 
-## 下载 2.2.2
+## 下载 2.2.3
 
 - [Windows x64 压缩包](downloads/RiftTimer-Windows-x64.zip)。完整解压，运行 RiftTimer.exe。
 - [Android APK](downloads/RiftTimer-Android.apk)。支持 Android 8.0 及以上。

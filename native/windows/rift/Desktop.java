@@ -52,8 +52,8 @@ public final class Desktop implements Controller.Host {
         tools.add(key("悬浮窗",()->hud.show(!hud.window.isVisible())));tools.add(key("说明",this::help));heading.add(tools,BorderLayout.EAST);top.add(heading,BorderLayout.NORTH);
         JPanel console=card(new BorderLayout(12,0),RAISED,22);console.setBorder(new EmptyBorder(13,16,13,16));
         JPanel state=panel(new GridLayout(2,1));state.add(status);state.add(summary);console.add(state);
-        mic=key("开启语音",MINT,BG,()->{if(speech.active())speech.stop();else voiceKeys.arm(speech);});console.add(mic,BorderLayout.EAST);top.add(console);root.add(top,BorderLayout.NORTH);
-        speech=new Speech(voiceKeys.device,SwingUtilities::invokeLater,s->{voiceKeys.ready="正在聆听".equals(s);mic.setText(speech.active()?"关闭语音":"开启语音");notice(s.isEmpty()?"语音已关闭":s+(speech.active()?"  ·  说「上单闪现」":""));},
+        mic=key(voiceKeys.startLabel(),MINT,BG,()->{if(speech.active())voiceKeys.stop(speech);else voiceKeys.arm(speech);});console.add(mic,BorderLayout.EAST);top.add(console);root.add(top,BorderLayout.NORTH);
+        speech=new Speech(voiceKeys.device,SwingUtilities::invokeLater,s->{voiceKeys.ready="正在聆听".equals(s);mic.setText(speech.active()?"关闭语音":voiceKeys.startLabel());notice(s.isEmpty()?"语音已关闭":s+(speech.active()?"  ·  说「上单闪现」":""));},
             phrase->{if(System.currentTimeMillis()>=muteUntil){notice("听到  "+phrase.replace(" ",""));Commands.apply(ctl,phrase);refresh();}});
         hud=new Overlay(this,ctl);
         JPanel board=panel(new GridLayout(1,5,10,10));
@@ -68,7 +68,6 @@ public final class Desktop implements Controller.Host {
         JPanel foot=panel(new BorderLayout());foot.add(message);JPanel small=panel(new FlowLayout(FlowLayout.RIGHT,4,0));small.add(key("最近提醒",this::history));
         small.add(key("重置本局",()->confirm("重置全部计时？","保留技能选择及提醒设置",ctl::resetGame)));foot.add(small,BorderLayout.EAST);root.add(foot,BorderLayout.SOUTH);
         Dimension screen=Toolkit.getDefaultToolkit().getScreenSize();frame.setMinimumSize(new Dimension(600,430));frame.setSize(Math.min(1170,screen.width),Math.min(705,screen.height-48));frame.setLocationRelativeTo(null);refresh();frame.setVisible(true);
-        new javax.swing.Timer(35,e->voiceKeys.poll(speech)).start();
         new javax.swing.Timer(200,e->{ctl.tick();refresh();}).start();
     }
     JPanel slot(int i){
@@ -112,7 +111,7 @@ public final class Desktop implements Controller.Host {
             {"记录技能","点击技能名称更换技能，点击「计时」开表。「扣秒」可提前 5、10 或 20 秒；空闲技能会直接开始计时。「重置」结束本次计时。"},
             {"装备与提醒","点击位置旁的「急速」选择鞋子与符文。设置里可配置记录时自动扣秒、提前提醒、提示音、中文播报及悬浮窗到期闪烁。"},
             {"对局同步","单人计时自动保存在本机。点击「对局码」创建或加入 6–32 位数字对局。相同对局的队友共享技能配置和倒计时。"},
-            {"语音口令","开启语音后说「上单闪现」等位置与技能组合。设置 → 语音输入，可选择麦克风、随时说话、长按说话或按键切换模式。点击「录入快捷键」后直接按键盘按键、组合键或鼠标侧键。"},
+            {"语音口令","开启语音后说「上单闪现」等位置与技能组合。设置 → 语音输入，可选择麦克风、随时说话、长按说话或按键切换模式。模式与快捷键选定后自动保存。先在主窗口开启语音，再使用绑定的按键。"},
             {"悬浮窗","未锁定时左键点技能开表，右键点技能扣秒或重置，点位置名称设置急速。拖动标题移动，拖动右下角缩放。点右上锁图标锁定，再点即可解锁。锁定后其余区域均可穿透。"}
         };
         JPanel notes=panel(new GridLayout(0,1,0,8));
@@ -139,7 +138,7 @@ public final class Desktop implements Controller.Host {
         audio.add(key("试听",()->{Model.Settings cfg=new Model.Settings();cfg.sound=sound.isSelected();cfg.voice=voice.isSelected();remind("上单 · 闪现 已就绪",cfg);}));s.row(audio);
         JCheckBox pin=toggle("主窗口置顶",frame.isAlwaysOnTop()),visible=toggle("显示悬浮窗",hud.window.isVisible()),lock=toggle("锁定悬浮窗并穿透鼠标",hud.locked);
         JPanel display=panel(new GridLayout(1,2));display.add(pin);display.add(visible);s.row(display);JCheckBox blink=toggle("到期行闪烁 3 秒",hud.flash);JPanel hudOpts=panel(new GridLayout(1,2));hudOpts.add(lock);hudOpts.add(blink);s.row(hudOpts);
-        s.row(key("语音输入 · 设备、模式与快捷键",()->voiceKeys.settings(this,speech)));
+        s.row(key("语音输入 · 设备、模式与快捷键",()->{voiceKeys.settings(this,speech);if(!speech.active())mic.setText(voiceKeys.startLabel());}));
         JLabel percent=label("悬浮窗不透明度  "+hud.opacity+"%",14,MUTED);s.row(percent);
         JSlider alpha=new JSlider(25,100,hud.opacity);alpha.setOpaque(false);alpha.setForeground(MINT);alpha.addChangeListener(e->percent.setText("悬浮窗不透明度  "+alpha.getValue()+"%"));s.row(alpha);
         s.action("保存设置",()->{int n;try{n=Integer.parseInt(seconds.getText().trim());}catch(NumberFormatException e){n=-1;}if(n<0||n>600){seconds.setBorder(new LineBorder(LANES[4],2));return;}

@@ -2,7 +2,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const base = __dirname;
-const upstreamUrl = new URL(process.env.RIFT_ROOM_API || 'http://47.106.192.155/rift-timer/api');
+const upstreamUrl = new URL(process.env.RIFT_ROOM_API || 'https://47.106.192.155/rift-timer/api');
 const port = Number(process.env.PORT || 4317);
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8' };
 const server = http.createServer((req, res) => {

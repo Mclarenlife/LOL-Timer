@@ -31,7 +31,7 @@ public final class Controller {
         this.host=host;
         try{saved=Model.JSON.fromJson(host.load(),Saved.class);}catch(RuntimeException ignored){}
         if(saved==null||saved.local==null||!saved.local.valid())saved=new Saved();
-        if(saved.endpoint!=null&&!Rooms.ENDPOINT.equals(saved.endpoint)){saved.room=null;saved.code="";saved.offset=0;saved.rev=0;}
+        if(saved.endpoint!=null&&!Rooms.ENDPOINT.equals(saved.endpoint.replaceFirst("^http://","https://"))){saved.room=null;saved.code="";saved.offset=0;saved.rev=0;}
         saved.endpoint=null;
         if(saved.room==null||!saved.room.valid()||saved.code==null||!saved.code.matches("[0-9]{6,32}"))saved.code="";
     }

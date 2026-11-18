@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 public final class Rooms {
     private Rooms(){}
-    public static final String ENDPOINT="http://47.106.192.155/rift-timer/api";
+    public static final String ENDPOINT="https://47.106.192.155/rift-timer/api";
     public static final class Snapshot {
         public Model state;
         public int rev;
